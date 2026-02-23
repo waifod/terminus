@@ -1,10 +1,19 @@
-const codeBlocks = document.querySelectorAll("pre code[data-lang]");
+const codeBlocks = document.querySelectorAll("pre.giallo code[data-lang]");
 
 for (const codeBlock of codeBlocks) {
+    const preBlock = codeBlock.parentElement;
+    const hasLineNumbers = codeBlock.querySelector(".giallo-ln") !== null;
     let content;
-    if (codeBlock.parentElement.hasAttribute("data-linenos")) {
-        content = [...codeBlock.querySelectorAll("tr")]
-            .map((row) => row.querySelector("td:last-child")?.innerText ?? "")
+
+    if (hasLineNumbers) {
+        // Giallo uses spans with .giallo-l for lines and .giallo-ln for line numbers.
+        // Extract text from each line span, skipping the line number spans.
+        content = [...codeBlock.querySelectorAll(".giallo-l")]
+            .map((line) => {
+                const clone = line.cloneNode(true);
+                clone.querySelectorAll(".giallo-ln").forEach((ln) => ln.remove());
+                return clone.textContent;
+            })
             .join("");
     } else {
         content = codeBlock.innerText.split("\n").filter(Boolean).join("\n");
@@ -21,6 +30,6 @@ for (const codeBlock of codeBlocks) {
             setTimeout(() => copyButton.innerText = "Copy", 1000);
         });
 
-        codeBlock.prepend(copyButton);
+        preBlock.prepend(copyButton);
     }
 }
